@@ -1,0 +1,73 @@
+@page "/customers/create"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@using Application.DTO
+@using Application.Services.Customers
+@inject ICustomerService CustomerService
+@inject NavigationManager Navigation
+@using System.ComponentModel.DataAnnotations
+
+
+<PageTitle>Create Customer</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Create Customer</h3>
+                <a href="/customers" class="btn btn-outline-secondary btn-sm">← Back to list</a>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <EditForm Model="Model" OnValidSubmit="OnValidSubmit">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="alert alert-danger py-2 mb-3" />
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label for="FirstName" class="form-label">First Name</label>
+                                <InputText id="FirstName" class="form-control form-control-sm" @bind-Value="Model.FirstName" placeholder="First name" />
+                                <ValidationMessage For="@(() => Model.FirstName)" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="LastName" class="form-label">Last Name</label>
+                                <InputText id="LastName" class="form-control form-control-sm" @bind-Value="Model.LastName" placeholder="Last name" />
+                                <ValidationMessage For="@(() => Model.LastName)" />
+                            </div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="Email" class="form-label">Email</label>
+                            <InputText id="Email" class="form-control form-control-sm" @bind-Value="Model.Email" placeholder="email@example.com" />
+                            <ValidationMessage For="@(() => Model.Email)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="PhoneNumber" class="form-label">Phone Number</label>
+                            <InputText id="PhoneNumber" class="form-control form-control-sm" @bind-Value="Model.PhoneNumber" placeholder="Phone number" />
+                            <ValidationMessage For="@(() => Model.PhoneNumber)" />
+                        </div>
+
+                        <div class="d-flex gap-2 mt-3 pt-3 border-top">
+                            <button type="submit" class="btn btn-primary btn-sm">Create Customer</button>
+                            <a href="/customers" class="btn btn-link btn-sm text-muted">Cancel</a>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private CustomerCreateDTO Model { get; set; } = new();
+
+    private void OnValidSubmit()
+    {
+        CustomerService.CreateCustomer(Model);
+        Navigation.NavigateTo("/customers");
+    }
+}

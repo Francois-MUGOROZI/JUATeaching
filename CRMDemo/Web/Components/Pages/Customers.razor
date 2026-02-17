@@ -1,0 +1,165 @@
+@page "/customers"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@using Domain.Entities
+@using Application.Services.Customers
+@using Application.DTO
+@using MudBlazor
+@inject ICustomerService CustomerService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Customer List</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <MudText Typo="Typo.h4" Class="mb-4">Customer List</MudText>
+    
+    <MudButton Color="Color.Primary" 
+               Variant="Variant.Filled" 
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="OpenCreateDialog" 
+               Class="mb-4">
+        Add Customer
+    </MudButton>
+
+    <MudDataGrid Items="customers" 
+                 Hover="true"
+                 Striped="true"
+                 Dense="true"
+                 FilterMode="DataGridFilterMode.ColumnFilterRow"
+                 Loading="@loading"
+                 LoadingProgressColor="Color.Info">
+        <Columns>
+            <PropertyColumn Property="x => x.FirstName" Title="First Name" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.LastName" Title="Last Name" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.Email" Title="Email" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" Sortable="true" Filterable="true" />
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudButton Color="Color.Primary" 
+                                   Variant="Variant.Text" 
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Visibility"
+                                   OnClick="@(() => ViewCustomer(context.Item))">
+                            View
+                        </MudButton>
+                        <MudButton Color="Color.Secondary" 
+                                   Variant="Variant.Text" 
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   OnClick="@(() => OpenEditDialog(context.Item))">
+                            Edit
+                        </MudButton>
+                    </MudButtonGroup>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="Customer" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private List<Customer> customers = new List<Customer>();
+    private bool loading = false;
+
+    protected override void OnInitialized()
+    {
+        LoadCustomers();
+    }
+
+    private void LoadCustomers()
+    {
+        loading = true;
+        try
+        {
+            customers = CustomerService.GetAllCustomers();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = true,
+            ["CreateModel"] = new CustomerCreateDTO()
+        };
+
+        var options = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Small, 
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<CustomerDialog>("Create Customer", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is CustomerCreateDTO createDto)
+        {
+            try
+            {
+                CustomerService.CreateCustomer(createDto);
+                Snackbar.Add("Customer created successfully", Severity.Success);
+                LoadCustomers();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error creating customer: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenEditDialog(Customer customer)
+    {
+        var updateDto = new CustomerUpdateDTO
+        {
+            FirstName = customer.FirstName ?? "",
+            LastName = customer.LastName ?? "",
+            PhoneNumber = customer.PhoneNumber ?? ""
+        };
+
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = false,
+            ["UpdateModel"] = updateDto
+        };
+
+        var options = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Small, 
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<CustomerDialog>("Edit Customer", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is CustomerUpdateDTO updateModel)
+        {
+            try
+            {
+                CustomerService.UpdateCustomer(customer.Id, updateModel);
+                Snackbar.Add("Customer updated successfully", Severity.Success);
+                LoadCustomers();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error updating customer: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private void ViewCustomer(Customer customer)
+    {
+        Navigation.NavigateTo($"/customers/{customer.Id}");
+    }
+}

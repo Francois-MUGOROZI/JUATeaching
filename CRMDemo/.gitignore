@@ -1,0 +1,7 @@
+obj/
+bin/
+.vs/
+Bebug
+appsettings.Development.json
+.local
+Migrations/

@@ -1,0 +1,96 @@
+@page "/users/{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@using Application.Services.Users
+@using Application.DTO
+@inject IIdentityService IdentityService
+@inject NavigationManager Navigation
+
+<PageTitle>User Detail</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+    <MudButton Color="Color.Default" 
+               Variant="Variant.Text" 
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/users"))" 
+               Class="mb-4">
+        Back to Users List
+    </MudButton>
+
+    @if (user != null)
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h5" Class="mb-4">User Details</MudText>
+                
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">First Name</MudText>
+                        <MudText Typo="Typo.body1">@user.FirstName</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Last Name</MudText>
+                        <MudText Typo="Typo.body1">@user.LastName</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Email</MudText>
+                        <MudText Typo="Typo.body1">@user.Email</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Phone Number</MudText>
+                        <MudText Typo="Typo.body1">@(user.PhoneNumber ?? "N/A")</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudDivider Class="my-3" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Email Confirmed</MudText>
+                        <MudChip T="string" 
+                                Color="@(user.EmailConfirmed ? Color.Success : Color.Warning)" 
+                                Size="Size.Small" 
+                                Variant="Variant.Filled">
+                            @(user.EmailConfirmed ? "Confirmed" : "Pending Confirmation")
+                        </MudChip>
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudDivider Class="my-3" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Created At</MudText>
+                        <MudText Typo="Typo.body1">@user.CreatedAt.ToString("g")</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Updated At</MudText>
+                        <MudText Typo="Typo.body1">@user.UpdatedAt.ToString("g")</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+        <MudText Typo="Typo.body1" Class="text-center">Loading user details...</MudText>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private UserDetailDTO? user;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        user = await IdentityService.GetUserById(id);
+    }
+}

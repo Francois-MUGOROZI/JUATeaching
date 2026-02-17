@@ -1,0 +1,139 @@
+@using Application.DTO
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="@Model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary Class="mb-3" />
+            
+            <MudTextField @bind-Value="Model.FirstName" 
+                         Label="First Name" 
+                         Required="true"
+                         RequiredError="First Name is required"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         Class="mt-3" />
+            
+            <MudTextField @bind-Value="Model.LastName" 
+                         Label="Last Name" 
+                         Required="true"
+                         RequiredError="Last Name is required"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         Class="mt-3" />
+            
+            <MudTextField @bind-Value="Model.Email" 
+                         Label="Email" 
+                         Required="true"
+                         RequiredError="Email is required"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         InputType="InputType.Email"
+                         Disabled="@(!IsCreate)"
+                         Class="mt-3" />
+            
+            <MudTextField @bind-Value="Model.PhoneNumber" 
+                         Label="Phone Number" 
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         Class="mt-3" />
+            
+            @if (IsCreate)
+            {
+                <MudTextField @bind-Value="Model.Password" 
+                             Label="Password" 
+                             Required="true"
+                             RequiredError="Password is required"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             InputType="InputType.Password"
+                             HelperText="Password must be at least 8 characters, contain uppercase, and a digit"
+                             Class="mt-3" />
+                
+                <MudTextField @bind-Value="ConfirmPassword" 
+                             Label="Confirm Password" 
+                             Required="true"
+                             RequiredError="Please confirm your password"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             InputType="InputType.Password"
+                             Error="@(IsCreate && !string.IsNullOrEmpty(ConfirmPassword) && Model.Password != ConfirmPassword)"
+                             ErrorText="@(IsCreate && !string.IsNullOrEmpty(ConfirmPassword) && Model.Password != ConfirmPassword ? "Passwords do not match" : null)"
+                             Class="mt-3" />
+            }
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OnValidSubmit">@SubmitText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    
+    [Parameter] public bool IsCreate { get; set; } = true;
+    [Parameter] public RegisterUserDTO? CreateModel { get; set; }
+    [Parameter] public UserUpdateDTO? UpdateModel { get; set; }
+
+    private RegisterUserDTO Model { get; set; } = new();
+    private UserUpdateDTO? UpdateModelInternal { get; set; }
+    private string ConfirmPassword { get; set; } = string.Empty;
+
+    private string Title => IsCreate ? "Register User" : "Edit User";
+    private string SubmitText => IsCreate ? "Register" : "Save";
+
+    protected override void OnInitialized()
+    {
+        if (IsCreate)
+        {
+            Model = CreateModel ?? new RegisterUserDTO();
+        }
+        else
+        {
+            UpdateModelInternal = UpdateModel ?? new UserUpdateDTO();
+            Model = new RegisterUserDTO
+            {
+                FirstName = UpdateModelInternal.FirstName ?? string.Empty,
+                LastName = UpdateModelInternal.LastName ?? string.Empty,
+                Email = UpdateModelInternal.Email ?? string.Empty,
+                PhoneNumber = UpdateModelInternal.PhoneNumber ?? string.Empty,
+                Password = string.Empty
+            };
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void OnValidSubmit()
+    {
+        // Additional validation for password matching (create only)
+        if (IsCreate)
+        {
+            if (Model.Password != ConfirmPassword)
+            {
+                return; // Don't submit if passwords don't match
+            }
+            MudDialog.Close(DialogResult.Ok(Model));
+        }
+        else
+        {
+            var updateDto = new UserUpdateDTO
+            {
+                FirstName = Model.FirstName,
+                LastName = Model.LastName,
+                Email = Model.Email,
+                PhoneNumber = Model.PhoneNumber
+            };
+            MudDialog.Close(DialogResult.Ok(updateDto));
+        }
+    }
+}

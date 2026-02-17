@@ -1,0 +1,86 @@
+@page "/customers/{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@using Domain.Entities
+@using Application.Services.Customers
+@inject ICustomerService CustomerService
+@inject NavigationManager Navigation
+
+<PageTitle>Customer Detail</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+    <MudButton Color="Color.Default" 
+               Variant="Variant.Text" 
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/customers"))" 
+               Class="mb-4">
+        Back to Customer List
+    </MudButton>
+
+    @if (customer != null)
+    {
+        <MudCard>
+            <MudCardContent>
+                <MudText Typo="Typo.h5" Class="mb-4">Customer Details</MudText>
+                
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">First Name</MudText>
+                        <MudText Typo="Typo.body1">@customer.FirstName</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Last Name</MudText>
+                        <MudText Typo="Typo.body1">@customer.LastName</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Email</MudText>
+                        <MudText Typo="Typo.body1">@customer.Email</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Phone Number</MudText>
+                        <MudText Typo="Typo.body1">@customer.PhoneNumber</MudText>
+                    </MudItem>
+                    
+                    <MudItem xs="12">
+                        <MudDivider Class="my-3" />
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Status</MudText>
+                        <MudChip T="string" Color="@(customer.IsActive ? Color.Success : Color.Default)" 
+                                Size="Size.Small" 
+                                Variant="Variant.Filled">
+                            @(customer.IsActive ? "Active" : "Inactive")
+                        </MudChip>
+                    </MudItem>
+                    
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Created At</MudText>
+                        <MudText Typo="Typo.body1">@customer.CreatedAt.ToString("g")</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    }
+    else
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+        <MudText Typo="Typo.body1" Class="text-center">Loading customer details...</MudText>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Customer? customer;
+    
+    protected override void OnInitialized()
+    {
+        customer = CustomerService.GetCustomerById(id);
+    }
+}

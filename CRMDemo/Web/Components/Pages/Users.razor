@@ -1,0 +1,178 @@
+@page "/users"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@using Application.Services.Users
+@using Application.DTO
+@inject IIdentityService IdentityService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Users</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <MudText Typo="Typo.h4" Class="mb-4">Users</MudText>
+    
+    <MudButton Color="Color.Primary" 
+               Variant="Variant.Filled" 
+               StartIcon="@Icons.Material.Filled.PersonAdd"
+               OnClick="OpenRegisterDialog" 
+               Class="mb-4">
+        Register User
+    </MudButton>
+
+    <MudDataGrid Items="users" 
+                 Hover="true"
+                 Striped="true"
+                 Dense="true"
+                 FilterMode="DataGridFilterMode.ColumnFilterRow"
+                 Loading="@loading"
+                 LoadingProgressColor="Color.Info">
+        <Columns>
+            <PropertyColumn Property="x => x.FirstName" Title="First Name" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.LastName" Title="Last Name" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.Email" Title="Email" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.PhoneNumber" Title="Phone Number" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.EmailConfirmed" Title="Email Confirmed" Sortable="true" Filterable="true">
+                <CellTemplate>
+                    <MudChip T="string" 
+                            Color="@(context.Item.EmailConfirmed ? Color.Success : Color.Default)" 
+                            Size="Size.Small" 
+                            Variant="Variant.Filled">
+                        @(context.Item.EmailConfirmed ? "Confirmed" : "Pending")
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudButton Color="Color.Primary" 
+                                   Variant="Variant.Text" 
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Visibility"
+                                   OnClick="@(() => ViewUser(context.Item))">
+                            View
+                        </MudButton>
+                        <MudButton Color="Color.Secondary" 
+                                   Variant="Variant.Text" 
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   OnClick="@(() => OpenEditDialog(context.Item))">
+                            Edit
+                        </MudButton>
+                    </MudButtonGroup>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="UserDetailDTO" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private List<UserDetailDTO> users = new List<UserDetailDTO>();
+    private bool loading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        loading = true;
+        try
+        {
+            users = await IdentityService.GetAllUsers();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error loading users: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private async Task OpenRegisterDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = true,
+            ["CreateModel"] = new RegisterUserDTO()
+        };
+
+        var options = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Small, 
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<UserDialog>("Register User", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is RegisterUserDTO registerDto)
+        {
+            try
+            {
+                await IdentityService.RegisterUser(registerDto);
+                Snackbar.Add("User registered successfully", Severity.Success);
+                await LoadUsers();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error registering user: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenEditDialog(UserDetailDTO user)
+    {
+        var updateDto = new UserUpdateDTO
+        {
+            FirstName = user.FirstName ?? "",
+            LastName = user.LastName ?? "",
+            Email = user.Email ?? "",
+            PhoneNumber = user.PhoneNumber ?? ""
+        };
+
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = false,
+            ["UpdateModel"] = updateDto
+        };
+
+        var options = new DialogOptions 
+        { 
+            MaxWidth = MaxWidth.Small, 
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<UserDialog>("Edit User", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data != null && result.Data is UserUpdateDTO updateModel)
+        {
+            try
+            {
+                await IdentityService.UpdateUser(user.Id, updateModel);
+                Snackbar.Add("User updated successfully", Severity.Success);
+                await LoadUsers();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error updating user: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private void ViewUser(UserDetailDTO user)
+    {
+        Navigation.NavigateTo($"/users/{user.Id}");
+    }
+}

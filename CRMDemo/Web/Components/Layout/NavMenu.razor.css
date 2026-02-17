@@ -1,0 +1,6 @@
+/* Custom styles for NavMenu icons to change color when active */
+::deep .mud-nav-link.active .mud-icon-root,
+::deep .mud-nav-link.active .mud-icon-root svg {
+    color: var(--mud-palette-primary) !important;
+    fill: currentColor !important;
+}

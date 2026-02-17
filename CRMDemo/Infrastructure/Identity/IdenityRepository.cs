@@ -28,6 +28,23 @@ namespace Infrastructure.Identity
 
         public async Task<bool> LoginAsync(LoginDTO dto)
         {
+            // Load Sample data if no users exist
+            var AdminUser = new User()
+            {
+                FirstName = "Admin",
+                LastName = "User",
+                Email = "admin@example.com",
+                PhoneNumber = "1234567890",
+                UserName = "admin@example.com",
+                EmailConfirmed = true,
+            };
+
+            var existing = await _userManager.FindByEmailAsync(AdminUser.Email);
+            if (existing == null)
+            {
+                await _userManager.CreateAsync(AdminUser, "Admin@123");
+            }
+
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {

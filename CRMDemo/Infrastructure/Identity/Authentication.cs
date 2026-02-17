@@ -22,7 +22,6 @@ namespace Infrastructure.Identity
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;
                 options.Password.RequireUppercase = true;
-
                 options.User.RequireUniqueEmail = true;
 
                 options.SignIn.RequireConfirmedAccount = true;

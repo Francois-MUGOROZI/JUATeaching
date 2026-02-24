@@ -1,0 +1,201 @@
+@page "/tickets"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@using Domain.Entities
+@using Domain.ValueObjects
+@using Application.Services.Tickets
+@using Application.DTO
+@using MudBlazor
+@inject ITicketService TicketService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Ticket List</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
+    <MudText Typo="Typo.h4" Class="mb-4">Ticket List</MudText>
+
+    <MudButton Color="Color.Primary"
+               Variant="Variant.Filled"
+               StartIcon="@Icons.Material.Filled.Add"
+               OnClick="OpenCreateDialog"
+               Class="mb-4">
+        Add Ticket
+    </MudButton>
+
+    <MudDataGrid Items="tickets"
+                 Hover="true"
+                 Striped="true"
+                 Dense="true"
+                 FilterMode="DataGridFilterMode.ColumnFilterRow"
+                 Loading="@loading"
+                 LoadingProgressColor="Color.Info">
+        <Columns>
+            <PropertyColumn Property="x => x.Subject" Title="Subject" Sortable="true" Filterable="true" />
+            <PropertyColumn Property="x => x.Description" Title="Description" Sortable="true" Filterable="true" />
+            <TemplateColumn Title="Customer" Sortable="false">
+                <CellTemplate>
+                    @(context.Item.Customer != null
+                        ? $"{context.Item.Customer.FirstName} {context.Item.Customer.LastName}"
+                        : "-")
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Status" Sortable="false">
+                <CellTemplate>
+                    <MudChip T="string"
+                             Color="@GetStatusColor(context.Item.Status)"
+                             Size="Size.Small"
+                             Variant="Variant.Filled">
+                        @GetStatusLabel(context.Item.Status)
+                    </MudChip>
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.CreatedAt" Title="Created At" Sortable="true" Filterable="false" Format="g" />
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    <MudButtonGroup Variant="Variant.Text" Size="Size.Small">
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Text"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Visibility"
+                                   OnClick="@(() => ViewTicket(context.Item))">
+                            View
+                        </MudButton>
+                        <MudButton Color="Color.Secondary"
+                                   Variant="Variant.Text"
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Edit"
+                                   OnClick="@(() => OpenEditDialog(context.Item))">
+                            Edit
+                        </MudButton>
+                    </MudButtonGroup>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="Ticket" />
+        </PagerContent>
+    </MudDataGrid>
+</MudContainer>
+
+@code {
+    private List<Ticket> tickets = new();
+    private bool loading = false;
+
+    protected override void OnInitialized()
+    {
+        LoadTickets();
+    }
+
+    private void LoadTickets()
+    {
+        loading = true;
+        try
+        {
+            tickets = TicketService.GetAllTickets();
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+
+    private Color GetStatusColor(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => Color.Warning,
+        TicketStatus.InProgress => Color.Info,
+        TicketStatus.Resolved => Color.Primary,
+        TicketStatus.Closed => Color.Success,
+        _ => Color.Default
+    };
+
+    private string GetStatusLabel(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => "Open",
+        TicketStatus.InProgress => "In Progress",
+        TicketStatus.Resolved => "Resolved",
+        TicketStatus.Closed => "Closed",
+        _ => status.ToString()
+    };
+
+    private void ViewTicket(Ticket ticket)
+    {
+        Navigation.NavigateTo($"/tickets/{ticket.Id}");
+    }
+
+    private async Task OpenCreateDialog()
+    {
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = true,
+            ["CreateModel"] = new TicketCreateDTO()
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<TicketDialog>("Create Ticket", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is TicketCreateDTO createDto)
+        {
+            try
+            {
+                TicketService.CreateTicket(createDto);
+                Snackbar.Add("Ticket created successfully", Severity.Success);
+                LoadTickets();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error creating ticket: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+
+    private async Task OpenEditDialog(Ticket ticket)
+    {
+        var updateDto = new TicketUpdateDTO
+        {
+            Subject = ticket.Subject ?? "",
+            Description = ticket.Description ?? "",
+            CustomerId = ticket.CustomerId,
+            Status = ticket.Status
+        };
+
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = false,
+            ["UpdateModel"] = updateDto
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<TicketDialog>("Edit Ticket", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is TicketUpdateDTO updateModel)
+        {
+            try
+            {
+                TicketService.UpdateTicket(ticket.Id, updateModel);
+                Snackbar.Add("Ticket updated successfully", Severity.Success);
+                LoadTickets();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error updating ticket: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

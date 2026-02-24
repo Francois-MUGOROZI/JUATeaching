@@ -1,7 +1,9 @@
 using Application.DTO;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.ValueObjects;
 using Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories
 {
@@ -21,7 +23,7 @@ namespace Infrastructure.Repositories
 
         public Customer GetCustomerById(int id)
         {
-            return _dbContext.Customers.FirstOrDefault(c => c.Id == id);
+            return _dbContext.Customers.Include(a => a.Tickets).FirstOrDefault(c => c.Id == id);
         }
 
         public void CreateCustomer(CustomerCreateDTO customerDTO)
@@ -33,7 +35,7 @@ namespace Infrastructure.Repositories
                 Email = customerDTO.Email,
                 PhoneNumber = customerDTO.PhoneNumber,
                 CreatedAt = DateTime.Now,
-                IsActive = true,
+                Status = CustomerStatus.Active,
                 CreatedById = 1
             };
             _dbContext.Customers.Add(customer);

@@ -12,6 +12,7 @@ namespace Infrastructure.Data
         {
         }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,6 +26,15 @@ namespace Infrastructure.Data
             builder.Entity<IdentityRoleClaim<int>>().ToTable("RoleClaims");
             builder.Entity<IdentityUserToken<int>>().ToTable("UserTokens");
             builder.Entity<IdentityUserRole<int>>().ToTable("UserRoles").HasKey(ur => new { ur.UserId, ur.RoleId });
+
+            // Store status enums as strings instead of integers
+            builder.Entity<Ticket>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
+
+            builder.Entity<Customer>()
+                .Property(c => c.Status)
+                .HasConversion<string>();
         }
     }
 }

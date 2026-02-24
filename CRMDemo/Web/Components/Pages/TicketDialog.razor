@@ -1,0 +1,137 @@
+@using Application.DTO
+@using Application.Services.Customers
+@using Domain.ValueObjects
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@inject ICustomerService CustomerService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </TitleContent>
+    <DialogContent>
+        <EditForm Model="@Model" OnValidSubmit="OnValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary Class="mb-3" />
+
+            <MudTextField @bind-Value="Model.Subject"
+                         Label="Subject"
+                         Required="true"
+                         RequiredError="Subject is required"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         Class="mt-3" />
+
+            <MudTextField @bind-Value="Model.Description"
+                         Label="Description"
+                         Lines="3"
+                         Required="true"
+                         RequiredError="Description is required"
+                         Variant="Variant.Outlined"
+                         Margin="Margin.Dense"
+                         Class="mt-3" />
+
+            <MudSelect @bind-Value="_selectedCustomerId"
+                       T="int?"
+                       Label="Customer"
+                       Placeholder="Select a customer"
+                       Required="true"
+                       RequiredError="Customer is required"
+                       Variant="Variant.Outlined"
+                       Margin="Margin.Dense"
+                       Class="mt-3">
+                @foreach (var customer in customers)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)customer.Id)">@customer.FirstName @customer.LastName</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (!IsCreate)
+            {
+                <MudSelect @bind-Value="Model.Status"
+                           Label="Status"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Class="mt-3">
+                    <MudSelectItem Value="TicketStatus.Open">Open</MudSelectItem>
+                    <MudSelectItem Value="TicketStatus.InProgress">In Progress</MudSelectItem>
+                    <MudSelectItem Value="TicketStatus.Resolved">Resolved</MudSelectItem>
+                    <MudSelectItem Value="TicketStatus.Closed">Closed</MudSelectItem>
+                </MudSelect>
+            }
+        </EditForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="OnValidSubmit">@SubmitText</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public bool IsCreate { get; set; } = true;
+    [Parameter] public TicketCreateDTO? CreateModel { get; set; }
+    [Parameter] public TicketUpdateDTO? UpdateModel { get; set; }
+
+    private TicketUpdateDTO Model { get; set; } = new();
+    private int? _selectedCustomerId;
+    private List<Domain.Entities.Customer> customers = new();
+
+    private string Title => IsCreate ? "Create Ticket" : "Edit Ticket";
+    private string SubmitText => IsCreate ? "Create" : "Save";
+
+    protected override void OnInitialized()
+    {
+        customers = CustomerService.GetAllCustomers();
+
+        if (IsCreate)
+        {
+            var src = CreateModel ?? new TicketCreateDTO();
+            Model = new TicketUpdateDTO
+            {
+                Subject = src.Subject,
+                Description = src.Description,
+                CustomerId = src.CustomerId,
+                Status = TicketStatus.Open
+            };
+            _selectedCustomerId = src.CustomerId > 0 ? src.CustomerId : null;
+        }
+        else
+        {
+            var src = UpdateModel ?? new TicketUpdateDTO();
+            Model = new TicketUpdateDTO
+            {
+                Subject = src.Subject,
+                Description = src.Description,
+                CustomerId = src.CustomerId,
+                Status = src.Status
+            };
+            _selectedCustomerId = src.CustomerId > 0 ? src.CustomerId : null;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private void OnValidSubmit()
+    {
+        Model.CustomerId = _selectedCustomerId ?? 0;
+        if (IsCreate)
+        {
+            var createDto = new TicketCreateDTO
+            {
+                Subject = Model.Subject,
+                Description = Model.Description,
+                CustomerId = Model.CustomerId
+            };
+            MudDialog.Close(DialogResult.Ok(createDto));
+        }
+        else
+        {
+            MudDialog.Close(DialogResult.Ok(Model));
+        }
+    }
+}

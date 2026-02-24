@@ -3,66 +3,127 @@
 @attribute [Authorize]
 
 @using Domain.Entities
+@using Domain.ValueObjects
 @using Application.Services.Customers
+@using Application.Services.Tickets
+@using Application.DTO
+@using MudBlazor
 @inject ICustomerService CustomerService
+@inject ITicketService TicketService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 @inject NavigationManager Navigation
 
 <PageTitle>Customer Detail</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
-    <MudButton Color="Color.Default" 
-               Variant="Variant.Text" 
+    <MudButton Color="Color.Default"
+               Variant="Variant.Text"
                StartIcon="@Icons.Material.Filled.ArrowBack"
-               OnClick="@(() => Navigation.NavigateTo("/customers"))" 
+               OnClick="@(() => Navigation.NavigateTo("/customers"))"
                Class="mb-4">
         Back to Customer List
     </MudButton>
 
     @if (customer != null)
     {
-        <MudCard>
+        <MudCard Class="mb-4">
             <MudCardContent>
                 <MudText Typo="Typo.h5" Class="mb-4">Customer Details</MudText>
-                
+
                 <MudGrid Spacing="3">
                     <MudItem xs="12" sm="6">
                         <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">First Name</MudText>
                         <MudText Typo="Typo.body1">@customer.FirstName</MudText>
                     </MudItem>
-                    
+
                     <MudItem xs="12" sm="6">
                         <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Last Name</MudText>
                         <MudText Typo="Typo.body1">@customer.LastName</MudText>
                     </MudItem>
-                    
+
                     <MudItem xs="12" sm="6">
                         <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Email</MudText>
                         <MudText Typo="Typo.body1">@customer.Email</MudText>
                     </MudItem>
-                    
+
                     <MudItem xs="12" sm="6">
                         <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Phone Number</MudText>
                         <MudText Typo="Typo.body1">@customer.PhoneNumber</MudText>
                     </MudItem>
-                    
+
                     <MudItem xs="12">
                         <MudDivider Class="my-3" />
                     </MudItem>
-                    
+
                     <MudItem xs="12" sm="6">
                         <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Status</MudText>
-                        <MudChip T="string" Color="@(customer.IsActive ? Color.Success : Color.Default)" 
-                                Size="Size.Small" 
+                        <MudChip T="string" Color="@GetCustomerStatusColor(customer.Status)"
+                                Size="Size.Small"
                                 Variant="Variant.Filled">
-                            @(customer.IsActive ? "Active" : "Inactive")
+                            @customer.Status
                         </MudChip>
                     </MudItem>
-                    
+
                     <MudItem xs="12" sm="6">
                         <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Created At</MudText>
                         <MudText Typo="Typo.body1">@customer.CreatedAt.ToString("g")</MudText>
                     </MudItem>
                 </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard>
+            <MudCardContent>
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-3">
+                    <MudText Typo="Typo.h6">Tickets (@(customer.Tickets?.Count ?? 0))</MudText>
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               Size="Size.Small"
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="OpenCreateTicketDialog">
+                        Add Ticket
+                    </MudButton>
+                </MudStack>
+
+                @if (customer.Tickets != null && customer.Tickets.Count > 0)
+                {
+                    <MudDataGrid Items="customer.Tickets"
+                                 Hover="true"
+                                 Dense="true"
+                                 Striped="true">
+                        <Columns>
+                            <PropertyColumn Property="x => x.Subject" Title="Subject" />
+                            <PropertyColumn Property="x => x.Description" Title="Description" />
+                            <TemplateColumn Title="Status">
+                                <CellTemplate>
+                                    <MudChip T="string"
+                                             Color="@GetTicketStatusColor(context.Item.Status)"
+                                             Size="Size.Small"
+                                             Variant="Variant.Filled">
+                                        @GetTicketStatusLabel(context.Item.Status)
+                                    </MudChip>
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <PropertyColumn Property="x => x.CreatedAt" Title="Created At" Format="g" />
+                            <TemplateColumn Title="Actions">
+                                <CellTemplate>
+                                    <MudButton Color="Color.Primary"
+                                               Variant="Variant.Text"
+                                               Size="Size.Small"
+                                               StartIcon="@Icons.Material.Filled.Visibility"
+                                               OnClick="@(() => Navigation.NavigateTo($"/tickets/{context.Item.Id}"))">
+                                        View
+                                    </MudButton>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        </Columns>
+                    </MudDataGrid>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Color="Color.Default" Style="opacity: 0.6;">No tickets found for this customer.</MudText>
+                }
             </MudCardContent>
         </MudCard>
     }
@@ -78,9 +139,70 @@
     public int id { get; set; }
 
     private Customer? customer;
-    
+
     protected override void OnInitialized()
     {
         customer = CustomerService.GetCustomerById(id);
+    }
+
+    private Color GetCustomerStatusColor(CustomerStatus status) => status switch
+    {
+        CustomerStatus.Active => Color.Success,
+        CustomerStatus.Inactive => Color.Default,
+        CustomerStatus.Suspended => Color.Error,
+        _ => Color.Default
+    };
+
+    private Color GetTicketStatusColor(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => Color.Warning,
+        TicketStatus.InProgress => Color.Info,
+        TicketStatus.Resolved => Color.Primary,
+        TicketStatus.Closed => Color.Success,
+        _ => Color.Default
+    };
+
+    private string GetTicketStatusLabel(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => "Open",
+        TicketStatus.InProgress => "In Progress",
+        TicketStatus.Resolved => "Resolved",
+        TicketStatus.Closed => "Closed",
+        _ => status.ToString()
+    };
+
+    private async Task OpenCreateTicketDialog()
+    {
+        var createDto = new TicketCreateDTO { CustomerId = id };
+
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = true,
+            ["CreateModel"] = createDto
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<TicketDialog>("Create Ticket", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is TicketCreateDTO dto)
+        {
+            try
+            {
+                TicketService.CreateTicket(dto);
+                Snackbar.Add("Ticket created successfully", Severity.Success);
+                customer = CustomerService.GetCustomerById(id);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error creating ticket: {ex.Message}", Severity.Error);
+            }
+        }
     }
 }

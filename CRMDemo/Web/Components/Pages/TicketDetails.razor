@@ -1,0 +1,199 @@
+@page "/tickets/{id:int}"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
+@using Domain.Entities
+@using Domain.ValueObjects
+@using Application.Services.Tickets
+@using Application.DTO
+@using MudBlazor
+@inject ITicketService TicketService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>Ticket Detail</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
+    <MudButton Color="Color.Default"
+               Variant="Variant.Text"
+               StartIcon="@Icons.Material.Filled.ArrowBack"
+               OnClick="@(() => Navigation.NavigateTo("/tickets"))"
+               Class="mb-4">
+        Back to Ticket List
+    </MudButton>
+
+    @if (ticket != null)
+    {
+        <MudCard Class="mb-4">
+            <MudCardContent>
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                    <MudText Typo="Typo.h5">Ticket Details</MudText>
+                    <MudButton Color="Color.Secondary"
+                               Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Edit"
+                               OnClick="OpenEditDialog">
+                        Edit
+                    </MudButton>
+                </MudStack>
+
+                <MudGrid Spacing="3">
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Subject</MudText>
+                        <MudText Typo="Typo.h6">@ticket.Subject</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Description</MudText>
+                        <MudText Typo="Typo.body1">@ticket.Description</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Status</MudText>
+                        <MudChip T="string"
+                                 Color="@GetStatusColor(ticket.Status)"
+                                 Size="Size.Small"
+                                 Variant="Variant.Filled">
+                            @GetStatusLabel(ticket.Status)
+                        </MudChip>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Created At</MudText>
+                        <MudText Typo="Typo.body1">@ticket.CreatedAt.ToString("g")</MudText>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        @if (ticket.Customer != null)
+        {
+            <MudCard>
+                <MudCardContent>
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                        <MudText Typo="Typo.h6">Associated Customer</MudText>
+                        <MudButton Color="Color.Primary"
+                                   Variant="Variant.Text"
+                                   StartIcon="@Icons.Material.Filled.Visibility"
+                                   OnClick="@(() => Navigation.NavigateTo($"/customers/{ticket.Customer.Id}"))">
+                            View Customer
+                        </MudButton>
+                    </MudStack>
+
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Name</MudText>
+                            <MudText Typo="Typo.body1">@ticket.Customer.FirstName @ticket.Customer.LastName</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Email</MudText>
+                            <MudText Typo="Typo.body1">@ticket.Customer.Email</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Phone</MudText>
+                            <MudText Typo="Typo.body1">@ticket.Customer.PhoneNumber</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Default" Class="mb-1" Style="opacity: 0.6;">Status</MudText>
+                            <MudChip T="string"
+                                     Color="@GetCustomerStatusColor(ticket.Customer.Status)"
+                                     Size="Size.Small"
+                                     Variant="Variant.Filled">
+                                @ticket.Customer.Status
+                            </MudChip>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+    else
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+        <MudText Typo="Typo.body1" Class="text-center">Loading ticket details...</MudText>
+    }
+</MudContainer>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Ticket? ticket;
+
+    protected override void OnInitialized()
+    {
+        ticket = TicketService.GetTicketById(id);
+    }
+
+    private Color GetStatusColor(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => Color.Warning,
+        TicketStatus.InProgress => Color.Info,
+        TicketStatus.Resolved => Color.Primary,
+        TicketStatus.Closed => Color.Success,
+        _ => Color.Default
+    };
+
+    private string GetStatusLabel(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => "Open",
+        TicketStatus.InProgress => "In Progress",
+        TicketStatus.Resolved => "Resolved",
+        TicketStatus.Closed => "Closed",
+        _ => status.ToString()
+    };
+
+    private Color GetCustomerStatusColor(CustomerStatus status) => status switch
+    {
+        CustomerStatus.Active => Color.Success,
+        CustomerStatus.Inactive => Color.Default,
+        CustomerStatus.Suspended => Color.Error,
+        _ => Color.Default
+    };
+
+    private async Task OpenEditDialog()
+    {
+        if (ticket == null) return;
+
+        var updateDto = new TicketUpdateDTO
+        {
+            Subject = ticket.Subject ?? "",
+            Description = ticket.Description ?? "",
+            CustomerId = ticket.CustomerId,
+            Status = ticket.Status
+        };
+
+        var parameters = new DialogParameters
+        {
+            ["IsCreate"] = false,
+            ["UpdateModel"] = updateDto
+        };
+
+        var options = new DialogOptions
+        {
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true,
+            CloseButton = true
+        };
+
+        var dialog = await DialogService.ShowAsync<TicketDialog>("Edit Ticket", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled && result.Data is TicketUpdateDTO updateModel)
+        {
+            try
+            {
+                TicketService.UpdateTicket(ticket.Id, updateModel);
+                Snackbar.Add("Ticket updated successfully", Severity.Success);
+                ticket = TicketService.GetTicketById(id);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error updating ticket: {ex.Message}", Severity.Error);
+            }
+        }
+    }
+}

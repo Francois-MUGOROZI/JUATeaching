@@ -4,18 +4,17 @@ using Domain.ValueObjects;
 namespace Domain.Entities
 {
 
-    public class Customer
+    public class Ticket
     {
         public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
-
+        public string Subject { get; set; }
+        public string Description { get; set; }
         // Status is converted to string in database using Fluent API in ApplicationDbContext (on model creating)
-        public CustomerStatus Status { get; set; } = CustomerStatus.Active;
+        public TicketStatus Status { get; set; } = TicketStatus.Open;
 
-        public List<Ticket> Tickets { get; set; } // Owns tickets
+        // Customer Relation
+        public int CustomerId { get; set; }
+        public Customer Customer { get; set; } // Navigation prop (belong)
 
         /// Audit fields
         public DateTime CreatedAt { get; set; } = DateTime.Now;

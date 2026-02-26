@@ -15,9 +15,19 @@ namespace Infrastructure.Repositories
             _dbContext = context;
         }
         // Retrieving customers
-        public List<Customer> GetAllCustomers()
+        public List<Customer> GetAllCustomers(CustomerFilterDTO filter)
         {
-            List<Customer> customers = _dbContext.Customers.ToList();
+            IQueryable<Customer> query = _dbContext.Customers;
+            if (!string.IsNullOrEmpty(filter.SearchTerm))
+            {
+                query = query.Where(c => c.FirstName
+                .Contains(filter.SearchTerm) || c.LastName.Contains(filter.SearchTerm) || c.Email.Contains(filter.SearchTerm));
+            }
+            if (filter.Status.HasValue)
+            {
+                query = query.Where(c => c.Status == filter.Status.Value);
+            }
+            List<Customer> customers = query.ToList();
             return customers;
         }
 

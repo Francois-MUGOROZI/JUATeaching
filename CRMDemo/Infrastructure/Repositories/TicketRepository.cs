@@ -14,9 +14,24 @@ namespace Infrastructure.Repositories
             _dbContext = context;
         }
         // Retrieving tickets
-        public List<Ticket> GetAllTickets()
+        public List<Ticket> GetAllTickets(TicketFilterDTO filter)
         {
-            return _dbContext.Tickets.Include(t => t.Customer).ToList();
+
+            IQueryable<Ticket> query = _dbContext.Tickets.Include(t => t.Customer);
+
+            if (!string.IsNullOrEmpty(filter.SearchTerm))
+            {
+                query = query.Where(t => t.Subject.Contains(filter.SearchTerm) || t.Description.Contains(filter.SearchTerm));
+            }
+            if (filter.Status.HasValue)
+            {
+                query = query.Where(t => t.Status == filter.Status.Value);
+            }
+            if (filter.CustomerId > 0)
+            {
+                query = query.Where(t => t.CustomerId == filter.CustomerId);
+            }
+            return query.ToList();
         }
 
         public Ticket? GetTicketById(int id)

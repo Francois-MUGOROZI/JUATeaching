@@ -3,6 +3,7 @@ using Application.Services.Customers;
 using Application.Services.Tickets;
 using Application.Services.Users;
 using Infrastructure.DependencyInjection;
+using Infrastructure.Data;
 
 using MudBlazor.Services;
 using Infrastructure.Identity;
@@ -31,6 +32,13 @@ builder.Services.AddScoped<IIdentityService, IdentityService>();
 
 
 var app = builder.Build();
+
+// Seed database on startup
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
+    await seeder.SeedAsync();
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

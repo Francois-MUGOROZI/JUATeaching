@@ -19,9 +19,9 @@ namespace Application.Services.Customers
         {
             return _customer.GetCustomerById(id);
         }
-        public List<Customer> GetAllCustomers()
+        public List<Customer> GetAllCustomers(CustomerFilterDTO filter)
         {
-            List<Customer> customers = _customer.GetAllCustomers();
+            List<Customer> customers = _customer.GetAllCustomers(filter);
             return customers;
         }
         public void CreateCustomer(CustomerCreateDTO customerDTO)

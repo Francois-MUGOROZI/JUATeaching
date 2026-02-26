@@ -77,7 +77,7 @@
         loading = true;
         try
         {
-            customers = CustomerService.GetAllCustomers();
+            customers = CustomerService.GetAllCustomers( new CustomerFilterDTO());
         }
         finally
         {

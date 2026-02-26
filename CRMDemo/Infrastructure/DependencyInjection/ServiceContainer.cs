@@ -25,6 +25,9 @@ namespace Infrastructure.DependencyInjection
             services.AddScoped<ITicket, TicketRepository>();
             services.AddScoped<IIdentity, IdentityRepository>();
 
+            // Register Data Seeder
+            services.AddScoped<IDataSeeder, DataSeeder>();
+
             return services;
         }
     }

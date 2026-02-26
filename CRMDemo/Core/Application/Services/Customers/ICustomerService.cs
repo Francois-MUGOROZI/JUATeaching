@@ -6,7 +6,7 @@ namespace Application.Services.Customers
     public interface ICustomerService
     {
         Customer GetCustomerById(int id);
-        List<Customer> GetAllCustomers();
+        List<Customer> GetAllCustomers(CustomerFilterDTO filter);
         void CreateCustomer(CustomerCreateDTO customerDTO);
         void UpdateCustomer(int id, CustomerUpdateDTO customerDTO);
     }

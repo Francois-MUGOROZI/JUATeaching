@@ -5,7 +5,7 @@ namespace Application.Interfaces
 {
     public interface ICustomer
     {
-        List<Customer> GetAllCustomers();
+        List<Customer> GetAllCustomers(CustomerFilterDTO filter);
         Customer GetCustomerById(int id);
         void CreateCustomer(CustomerCreateDTO customerDTO);
         void UpdateCustomer(int id, CustomerUpdateDTO customerDTO);

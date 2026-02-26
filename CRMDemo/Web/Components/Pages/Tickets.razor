@@ -25,6 +25,21 @@
         Add Ticket
     </MudButton>
 
+    <MudSelect 
+               T="TicketStatus?"
+               Label="Filter by Status"
+               Placeholder="Select status"
+               Variant="Variant.Outlined"
+               Margin="Margin.Dense"
+               ValueChanged="@HandleStatusChanged"
+               Class="mb-4">
+        <MudSelectItem T="TicketStatus?" Value="null">All</MudSelectItem>
+        <MudSelectItem T="TicketStatus?" Value="TicketStatus.Open">Open</MudSelectItem>
+        <MudSelectItem T="TicketStatus?" Value="TicketStatus.InProgress">In Progress</MudSelectItem>
+        <MudSelectItem T="TicketStatus?" Value="TicketStatus.Resolved">Resolved</MudSelectItem>
+        <MudSelectItem T="TicketStatus?" Value="TicketStatus.Closed">Closed</MudSelectItem>
+    </MudSelect>
+
     <MudDataGrid Items="tickets"
                  Hover="true"
                  Striped="true"
@@ -84,6 +99,16 @@
     private List<Ticket> tickets = new();
     private bool loading = false;
 
+    private TicketFilterDTO filter = new(){
+        Status = TicketStatus.Resolved
+    };
+
+    private void HandleStatusChanged(TicketStatus? status)
+    {
+        filter.Status = status;
+        LoadTickets();
+    }
+
     protected override void OnInitialized()
     {
         LoadTickets();
@@ -94,7 +119,7 @@
         loading = true;
         try
         {
-            tickets = TicketService.GetAllTickets();
+            tickets = TicketService.GetAllTickets(filter);
         }
         finally
         {

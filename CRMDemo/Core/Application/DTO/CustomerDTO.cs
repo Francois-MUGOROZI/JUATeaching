@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Domain.ValueObjects;
 
 namespace Application.DTO
 {
@@ -26,5 +27,13 @@ namespace Application.DTO
         public string LastName { get; set; } = string.Empty;
 
         public string PhoneNumber { get; set; } = string.Empty;
+    }
+
+    public class CustomerFilterDTO
+    {
+        public string? SearchTerm { get; set; }
+        public CustomerStatus? Status { get; set; }
+        public DateTime? CreatedFrom { get; set; }
+        public DateTime? CreatedTo { get; set; }
     }
 }

@@ -39,4 +39,14 @@ namespace Application.DTO
         public string CustomerName { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
     }
+
+    public class TicketFilterDTO
+    {
+        public string? SearchTerm { get; set; }
+        public TicketStatus? Status { get; set; }
+        public DateTime? CreatedFrom { get; set; }
+        public DateTime? CreatedTo { get; set; }
+
+        public int CustomerId { get; set; }
+    }
 }

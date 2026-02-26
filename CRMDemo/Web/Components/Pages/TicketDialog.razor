@@ -83,7 +83,7 @@
 
     protected override void OnInitialized()
     {
-        customers = CustomerService.GetAllCustomers();
+        customers = CustomerService.GetAllCustomers(new CustomerFilterDTO());
 
         if (IsCreate)
         {

@@ -13,9 +13,9 @@ namespace Application.Services.Tickets
             _ticket = ticket;
         }
 
-        public List<Ticket> GetAllTickets()
+        public List<Ticket> GetAllTickets(TicketFilterDTO filter)
         {
-            return _ticket.GetAllTickets();
+            return _ticket.GetAllTickets(filter);
         }
 
         public Ticket? GetTicketById(int id)

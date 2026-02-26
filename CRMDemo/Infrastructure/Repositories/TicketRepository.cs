@@ -65,5 +65,17 @@ namespace Infrastructure.Repositories
             ticket.UpdatedAt = DateTime.Now;
             _dbContext.SaveChanges();
         }
+
+        public List<StatusCountDTO> GetTicketCountsByStatus()
+        {
+            return _dbContext.Tickets
+                .GroupBy(t => t.Status)
+                .Select(g => new StatusCountDTO
+                {
+                    Status = g.Key,
+                    Count = g.Count()
+                })
+                .ToList();
+        }
     }
 }

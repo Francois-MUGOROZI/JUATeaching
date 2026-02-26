@@ -1,0 +1,80 @@
+<MudCard Class="stats-card" Elevation="2">
+    <MudCardContent Class="px-4 py-3">
+        <!-- Header: title + optional trend -->
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.overline" Class="font-weight-semibold text-uppercase">
+                @Title
+            </MudText>
+
+            @if (!string.IsNullOrWhiteSpace(TrendText))
+            {
+                <MudText Typo="Typo.caption" Color="@TrendColor" Class="d-flex align-center">
+                    @if (!string.IsNullOrWhiteSpace(TrendIcon))
+                    {
+                        <MudIcon Icon="@TrendIcon" Class="mr-1" Size="Size.Small" />
+                    }
+                    @TrendText
+                </MudText>
+            }
+        </MudStack>
+
+        <!-- Main value and icon -->
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mt-3">
+            <MudStack Spacing="1">
+                <MudText Typo="Typo.h5" Color="@ValueColor" Class="font-weight-bold">
+                    @Value
+                </MudText>
+
+                @if (!string.IsNullOrWhiteSpace(Subtitle))
+                {
+                    <MudText Typo="Typo.body2" Class="mud-text-secondary">
+                        @Subtitle
+                    </MudText>
+                }
+            </MudStack>
+
+            @if (!string.IsNullOrWhiteSpace(Icon))
+            {
+                <MudAvatar Color="@IconColor"
+                           Variant="Variant.Outlined"
+                           Size="Size.Small"
+                           Class="ml-4">
+                    <MudIcon Icon="@Icon" />
+                </MudAvatar>
+            }
+        </MudStack>
+
+        <!-- Optional action link -->
+        @if (!string.IsNullOrWhiteSpace(ActionText))
+        {
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       Class="mt-3 px-0 text-capitalize"
+                       OnClick="OnActionClicked"
+                       Disabled="!OnActionClicked.HasDelegate">
+                @ActionText
+            </MudButton>
+        }
+    </MudCardContent>
+</MudCard>
+
+@code {
+    // Primary content
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Subtitle { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public Color ValueColor { get; set; } = Color.Default;
+
+    // Trend / change indicator (e.g. "+16.24%")
+    [Parameter] public string TrendText { get; set; }
+    [Parameter] public Color TrendColor { get; set; } = Color.Success;
+    [Parameter] public string TrendIcon { get; set; } = Icons.Material.Filled.NorthEast;
+
+    // Right-side icon
+    [Parameter] public string Icon { get; set; }
+    [Parameter] public Color IconColor { get; set; } = Color.Primary;
+
+    // Optional footer action (e.g. "See details")
+    [Parameter] public string ActionText { get; set; }
+    [Parameter] public EventCallback OnActionClicked { get; set; }
+}

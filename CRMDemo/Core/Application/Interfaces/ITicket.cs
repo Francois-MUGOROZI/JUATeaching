@@ -9,5 +9,7 @@ namespace Application.Interfaces
         Ticket? GetTicketById(int id);
         void CreateTicket(TicketCreateDTO ticketDTO);
         void UpdateTicket(int id, TicketUpdateDTO ticketDTO);
+
+        List<StatusCountDTO> GetTicketCountsByStatus();
     }
 }

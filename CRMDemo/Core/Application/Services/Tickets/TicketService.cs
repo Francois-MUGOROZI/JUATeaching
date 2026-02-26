@@ -32,5 +32,10 @@ namespace Application.Services.Tickets
         {
             _ticket.UpdateTicket(id, ticketDTO);
         }
+
+        public List<StatusCountDTO> GetTicketCountsByStatus()
+        {
+            return _ticket.GetTicketCountsByStatus();
+        }
     }
 }

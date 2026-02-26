@@ -35,7 +35,7 @@ namespace Infrastructure.Data
 
             // Generate and seed customers with tickets
             var customers = GenerateCustomers(MinCustomerCount);
-            
+
             await _context.Customers.AddRangeAsync(customers);
             await _context.SaveChangesAsync();
         }

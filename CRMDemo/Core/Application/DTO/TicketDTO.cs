@@ -49,4 +49,10 @@ namespace Application.DTO
 
         public int CustomerId { get; set; }
     }
+
+    public class StatusCountDTO
+    {
+        public TicketStatus Status { get; set; }
+        public int Count { get; set; }
+    }
 }

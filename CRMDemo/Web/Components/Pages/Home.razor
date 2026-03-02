@@ -10,52 +10,90 @@
 
 <PageTitle>Home</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-6">
-    <MudText Typo="Typo.h4" Class="mb-4">Welcome to CRM Demo</MudText>
-    <MudGrid>
-        <MudItem xs="12" sm="6" md="4">
-            <StatsCard Title="Total Tickets" Value="@totalTickets.ToString()" Subtitle="All tickets" ValueColor="Color.Primary" Icon="Icons.Material.Filled.Assignment" TrendText="23%"/>
-        </MudItem>
-        @foreach (var statusCount in ticketStatusCounts)
-        {
-            <MudItem xs="12" sm="6" md="4">
-                <StatsCard Title="@statusCount.Status.ToString()" Value="@statusCount.Count.ToString()" Subtitle="Tickets with this status" ValueColor="Color.Primary" Icon="Icons.Material.Filled.Assignment" />
-            </MudItem>
-        }
-    </MudGrid>
+<MudContainer MaxWidth="MaxWidth.False" Class="dashboard-page">
+    <MudStack Spacing="3">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="dashboard-header">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h4">Dashboard</MudText>
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">Overview of tickets by status</MudText>
+            </MudStack>
+        </MudStack>
 
-    <MudGrid>
-        <MudItem xs="12" sm="6" md="6">
-            @if(Series.Count > 0){
-                <MudChart 
-                    ChartType="ChartType.Pie" 
-                    ChartSeries="@Series" 
-                    XAxisLabels="@Labels" 
-                    ChartOptions="@Options"
-                    Width="300px" Height="300px" />
+        <MudGrid Spacing="3" Class="mb-4">
+            <MudItem xs="12" sm="6" md="3">
+                <StatsCard Title="Total Tickets"
+                           Value="@totalTickets.ToString()"
+                           Subtitle="All tickets"
+                           ValueColor="Color.Primary"
+                           Icon="@Icons.Material.Filled.ConfirmationNumber"
+                           IconColor="Color.Primary"
+                           TrendText="23%" />
+            </MudItem>
+            @foreach (var statusCount in ticketStatusCounts)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <StatsCard Title="@statusCount.Status.ToString()"
+                               Value="@statusCount.Count.ToString()"
+                               Subtitle="Tickets with this status"
+                               ValueColor="Color.Primary"
+                               Icon="@GetStatusIcon(statusCount.Status)"
+                               IconColor="@GetStatusColor(statusCount.Status)" />
+                </MudItem>
             }
-        </MudItem>
-        <MudItem xs="12" sm="6" md="6">
-            @if(Series.Count > 0){
-                <MudChart 
-                    ChartType="ChartType.StackedBar" 
-                    ChartSeries="@Series" 
-                    XAxisLabels="@Labels" 
-                    ChartOptions="@Options"
-                    Width="300px" Height="300px" />
-            }
-        </MudItem>
-        <MudItem xs="12" sm="6" md="6">
-            @if(Series.Count > 0){
-                <MudChart 
-                    ChartType="ChartType.Line" 
-                    ChartSeries="@Series" 
-                    XAxisLabels="@Labels" 
-                    ChartOptions="@Options"
-                    Width="500px" Height="500px" />
-            }
-        </MudItem>
-    </MudGrid>
+        </MudGrid>
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4 h-100" Elevation="0">
+                    <MudText Typo="Typo.subtitle1">Status Distribution</MudText>
+                    @if (ticketStatusCounts.Count > 0)
+                    {
+                        <MudStack AlignItems="AlignItems.Center" Class="py-2">
+                            <MudChart 
+                                ChartType="ChartType.Donut" 
+                                InputData="@Series[0].Data" 
+                                XAxisLabels="@Labels" 
+                                ChartOptions="@Options"
+                                SelectedIndex="1"
+                                Width="300px" Height="300px" />
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2" Class="mud-text-secondary">No data available</MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudPaper Class="pa-4 h-100" Elevation="0">
+                    <MudText Typo="Typo.subtitle1">Tickets by Status</MudText>
+                    @if (ticketStatusCounts.Count > 0)
+                    {
+                        <MudChart 
+                            ChartType="ChartType.StackedBar" 
+                            ChartSeries="@Series" 
+                            XAxisLabels="@Labels" 
+                            ChartOptions="@Options"
+                            Width="100%" Height="260px" />
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12">
+                <MudPaper Class="pa-4 h-100" Elevation="0">
+                    <MudText Typo="Typo.subtitle1">Tickets Trend</MudText>
+                    @if (ticketStatusCounts.Count > 0)
+                    {
+                        <MudChart 
+                            ChartType="ChartType.Line" 
+                            ChartSeries="@Series" 
+                            XAxisLabels="@Labels" 
+                            ChartOptions="@Options"
+                            Width="100%" Height="320px" />
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudStack>
 </MudContainer>
 
 @code {
@@ -87,5 +125,25 @@
             }
         };
         Labels = ticketStatusCounts.Select(t => t.Status.ToString()).ToArray();
+
+        StateHasChanged();
     }
+
+    private string GetStatusIcon(Domain.ValueObjects.TicketStatus status) => status switch
+    {
+        Domain.ValueObjects.TicketStatus.Open => Icons.Material.Filled.MarkEmailUnread,
+        Domain.ValueObjects.TicketStatus.InProgress => Icons.Material.Filled.Timelapse,
+        Domain.ValueObjects.TicketStatus.Resolved => Icons.Material.Filled.TaskAlt,
+        Domain.ValueObjects.TicketStatus.Closed => Icons.Material.Filled.Lock,
+        _ => Icons.Material.Filled.ConfirmationNumber
+    };
+
+    private Color GetStatusColor(Domain.ValueObjects.TicketStatus status) => status switch
+    {
+        Domain.ValueObjects.TicketStatus.Open => Color.Info,
+        Domain.ValueObjects.TicketStatus.InProgress => Color.Warning,
+        Domain.ValueObjects.TicketStatus.Resolved => Color.Success,
+        Domain.ValueObjects.TicketStatus.Closed => Color.Dark,
+        _ => Color.Primary
+    };
 }

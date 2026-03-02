@@ -12,9 +12,9 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="1">
+    <MudAppBar Elevation="0" Dense="true" Class="app-bar">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h6" Class="ml-2">CRM Demo</MudText>
+        <MudText Typo="Typo.h6" Class="ml-2 app-title">CRM Demo</MudText>
 
         <MudSpacer />
         <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
@@ -27,13 +27,14 @@
                        title="Logout" />
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen" 
-               Elevation="1"
+               Elevation="0"
                Variant="@DrawerVariant.Mini"
                OpenMiniOnHover="true"
-               ClipMode="@DrawerClipMode.Always">
+               ClipMode="@DrawerClipMode.Never"
+               Class="app-drawer">
         <NavMenu />
     </MudDrawer>
-    <MudMainContent>
+    <MudMainContent Class="main-content container">
         @Body
     </MudMainContent>
 </MudLayout>
@@ -68,8 +69,8 @@
             Secondary = Colors.Teal.Lighten1,        // Light teal for secondary
             Tertiary = Colors.Orange.Lighten1,       // Light orange for accents
             AppbarBackground = Colors.Gray.Darken4,   // Very dark gray appbar
-            Background = Colors.Gray.Darken3,        // Dark gray background
-            Surface = Colors.Gray.Darken2,            // Dark surface
+            Background = Colors.Gray.Darken4,        // Dark gray background
+            Surface = Colors.Gray.Darken3,            // Dark surface
             DrawerBackground = Colors.Gray.Darken3,  // Dark drawer
             DrawerText = Colors.Shades.White,        // White text in drawer
             Success = Colors.Green.Lighten1,         // Success green
@@ -86,7 +87,7 @@
             DefaultBorderRadius = "4px",
             DrawerWidthLeft = "260px",
             DrawerWidthRight = "300px",
-            AppbarHeight = "64px"
+            AppbarHeight = "80px",
         }
     };
     

@@ -1,0 +1,12 @@
+{
+	"name": "juateaching",
+	"version": "1.0.0",
+	"description": "This is a project monorepo for teaching materials for the JUATeaching project. It contains the following packages:",
+	"main": "index.js",
+	"scripts": {
+		"watch": "cd CRMDemo/Web && dotnet watch"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC"
+}

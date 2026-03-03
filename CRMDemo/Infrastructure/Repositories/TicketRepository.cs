@@ -9,9 +9,12 @@ namespace Infrastructure.Repositories
     public class TicketRepository : ITicket
     {
         private readonly ApplicationDbContext _dbContext;
-        public TicketRepository(ApplicationDbContext context)
+        private readonly IUserContext _userContext;
+
+        public TicketRepository(ApplicationDbContext context, IUserContext userContext)
         {
             _dbContext = context;
+            _userContext = userContext;
         }
         // Retrieving tickets
         public List<Ticket> GetAllTickets(TicketFilterDTO filter)
@@ -47,7 +50,7 @@ namespace Infrastructure.Repositories
                 Description = ticketDTO.Description,
                 CustomerId = ticketDTO.CustomerId,
                 CreatedAt = DateTime.Now,
-                CreatedById = 1
+                CreatedById = _userContext.Id
             };
             _dbContext.Tickets.Add(ticket);
             _dbContext.SaveChanges();
@@ -63,6 +66,7 @@ namespace Infrastructure.Repositories
             ticket.CustomerId = ticketDTO.CustomerId;
             ticket.Status = ticketDTO.Status;
             ticket.UpdatedAt = DateTime.Now;
+            ticket.UpdatedById = _userContext.Id;
             _dbContext.SaveChanges();
         }
 

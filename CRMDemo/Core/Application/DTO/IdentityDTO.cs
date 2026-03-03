@@ -55,5 +55,23 @@ namespace Application.DTO
         public bool EmailConfirmed { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+
+        /// <summary>
+        /// Gets the full name (FirstName LastName)
+        /// </summary>
+        public string FullName => $"{FirstName} {LastName}".Trim();
+
+        /// <summary>
+        /// Gets the avatar initials (first letter of first name + first letter of last name)
+        /// </summary>
+        public string Initials
+        {
+            get
+            {
+                var first = !string.IsNullOrEmpty(FirstName) ? FirstName[0].ToString().ToUpper() : "";
+                var last = !string.IsNullOrEmpty(LastName) ? LastName[0].ToString().ToUpper() : "";
+                return $"{first}{last}";
+            }
+        }
     }
 }

@@ -20,6 +20,10 @@ namespace Infrastructure.DependencyInjection
             // Register identity service
             services.AddAuthenticationService(configuration);
 
+            // Register User Context (for accessing current user anywhere)
+            services.AddHttpContextAccessor();
+            services.AddScoped<IUserContext, UserContext>();
+
             // Register Repositories 
             services.AddScoped<ICustomer, CustomerRepository>();
             services.AddScoped<ITicket, TicketRepository>();

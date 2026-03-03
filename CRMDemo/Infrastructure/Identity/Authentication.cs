@@ -30,7 +30,8 @@ namespace Infrastructure.Identity
             .AddRoles<IdentityRole<int>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddSignInManager()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddClaimsPrincipalFactory<CustomUserClaimsPrincipalFactory>();
 
             services.Configure<DataProtectionTokenProviderOptions>(options =>
             {

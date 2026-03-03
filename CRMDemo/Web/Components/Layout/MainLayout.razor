@@ -12,29 +12,52 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Elevation="0" Dense="true" Class="app-bar">
+    <MudAppBar Elevation="0" Dense="true">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h6" Class="ml-2 app-title">CRM Demo</MudText>
+        <MudText Typo="Typo.h6" Class="ml-2">CRM Demo</MudText>
 
         <MudSpacer />
         <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
                        Color="Color.Inherit" 
                        OnClick="ToggleTheme"
                        title="@(_isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")" />
-        <MudIconButton Icon="@Icons.Material.Filled.Logout" 
-                       Color="Color.Inherit" 
-                       OnClick="HandleLogout"
-                       title="Logout" />
+        
+        @* User Profile Section *@
+        @if (UserContext.IsAuthenticated)
+        {
+            <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
+                <ActivatorContent>
+                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="cursor-pointer ml-2">
+                        <MudAvatar Color="Color.Secondary" Size="Size.Small">@UserContext.Initials</MudAvatar>
+                        <div Class="d-sm-none d-md-flex">
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.body2" Style="line-height: 1.2;">@UserContext.FullName</MudText>
+                                <MudText Typo="Typo.caption" Style="line-height: 1.2; opacity: 0.8;">@UserContext.Email</MudText>
+                            </MudStack>
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Small" />
+                    </MudStack>
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem Icon="@Icons.Material.Filled.Person">Profile</MudMenuItem>
+                    <MudDivider />
+                    <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="HandleLogout">Logout</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        }
+        else
+        {
+            <MudIconButton Icon="@Icons.Material.Filled.Logout" 
+                           Color="Color.Inherit" 
+                           OnClick="HandleLogout"
+                           title="Logout" />
+        }
     </MudAppBar>
     <MudDrawer @bind-Open="@_drawerOpen" 
-               Elevation="0"
-               Variant="@DrawerVariant.Mini"
-               OpenMiniOnHover="true"
-               ClipMode="@DrawerClipMode.Never"
-               Class="app-drawer">
+               Elevation="0">
         <NavMenu />
     </MudDrawer>
-    <MudMainContent Class="main-content container">
+    <MudMainContent>
         @Body
     </MudMainContent>
 </MudLayout>

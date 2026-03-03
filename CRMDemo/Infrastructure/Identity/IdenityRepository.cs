@@ -12,18 +12,21 @@ namespace Infrastructure.Identity
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly RoleManager<IdentityRole<int>> _roleManager;
+        private readonly IUserContext _userContext;
 
         public IdentityRepository(
             ApplicationDbContext context,
             UserManager<User> userManager,
             SignInManager<User> signInManager,
-            RoleManager<IdentityRole<int>> roleManager
+            RoleManager<IdentityRole<int>> roleManager,
+            IUserContext userContext
         )
         {
             _dbContext = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _userContext = userContext;
         }
 
         public async Task<bool> LoginAsync(LoginDTO dto)
@@ -147,6 +150,16 @@ namespace Infrastructure.Identity
                 var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
                 throw new InvalidOperationException($"Failed to update user: {errors}");
             }
+        }
+
+        public async Task<UserDetailDTO?> GetCurrentUserAsync()
+        {
+            if (!_userContext.IsAuthenticated || !_userContext.Id.HasValue)
+            {
+                return null;
+            }
+
+            return await GetUserById(_userContext.Id.Value);
         }
     }
 }

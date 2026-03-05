@@ -19,6 +19,8 @@ namespace Application.DTO
         [Required(ErrorMessage = "Password is required")]
         [MinLength(8, ErrorMessage = "Password must be at least 8 characters")]
         public string Password { get; set; } = string.Empty;
+
+        public string Role { get; set; } = string.Empty;
     }
 
     public class UserUpdateDTO
@@ -31,6 +33,8 @@ namespace Application.DTO
 
         public string PhoneNumber { get; set; } = string.Empty;
         public string? Email { get; set; }
+
+        public string Role { get; set; } = string.Empty;
     }
 
     public class LoginDTO

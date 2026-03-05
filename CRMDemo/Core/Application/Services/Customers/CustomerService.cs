@@ -2,17 +2,20 @@
 using Application.DTO;
 using Application.Interfaces;
 using Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Application.Services.Customers
 {
     public class CustomerService : ICustomerService
     {
         private readonly ICustomer _customer;
+        private readonly ILogger<CustomerService> _logger;
 
         // constructor 
-        public CustomerService(ICustomer customer)
+        public CustomerService(ICustomer customer, ILogger<CustomerService> logger)
         {
             _customer = customer;
+            _logger = logger;
         }
 
         public Customer GetCustomerById(int id)
@@ -28,11 +31,13 @@ namespace Application.Services.Customers
         {
             // check if exist and NID exist 
             _customer.CreateCustomer(customerDTO);
+            _logger.LogInformation("Customer created: {Email} {FirstName} {LastName}", customerDTO.Email, customerDTO.FirstName, customerDTO.LastName);
         }
 
         public void UpdateCustomer(int id, CustomerUpdateDTO customerDTO)
         {
             _customer.UpdateCustomer(id, customerDTO);
+            _logger.LogInformation("Customer updated: {CustomerId}", id);
         }
     }
 }

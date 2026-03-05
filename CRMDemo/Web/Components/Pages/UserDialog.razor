@@ -1,5 +1,6 @@
 @using Application.DTO
 @using System.ComponentModel.DataAnnotations
+@using Domain.ValueObjects
 @using Microsoft.AspNetCore.Components.Forms
 
 <MudDialog>
@@ -66,6 +67,11 @@
                              ErrorText="@(IsCreate && !string.IsNullOrEmpty(ConfirmPassword) && Model.Password != ConfirmPassword ? "Passwords do not match" : null)"
                              Class="mt-3" />
             }
+
+            <MudSelect @bind-Value="Model.Role" Label="Role" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="mt-3">
+                <MudSelectItem Value="@UserRole.Admin.ToString()">Admin</MudSelectItem>
+                <MudSelectItem Value="@UserRole.Customer.ToString()">Customer</MudSelectItem>
+            </MudSelect>
         </EditForm>
     </DialogContent>
     <DialogActions>

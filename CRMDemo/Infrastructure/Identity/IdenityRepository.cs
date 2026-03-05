@@ -1,5 +1,6 @@
 using Application.DTO;
 using Application.Interfaces;
+using Domain.ValueObjects;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,14 @@ namespace Infrastructure.Identity
 
         public async Task<bool> LoginAsync(LoginDTO dto)
         {
+            // Load default roles if no roles exist
+            if (!await _roleManager.Roles.AnyAsync())
+            {
+                await _roleManager.CreateAsync(new IdentityRole<int> { Name = UserRole.Admin.ToString() });
+                await _roleManager.CreateAsync(new IdentityRole<int> { Name = UserRole.Customer.ToString() });
+            }
+
+
             // Load Sample data if no users exist
             var AdminUser = new User()
             {
@@ -88,6 +97,12 @@ namespace Infrastructure.Identity
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
                 throw new InvalidOperationException($"Failed to create user: {errors}");
+            }
+
+            // Assign role to user
+            if (!string.IsNullOrEmpty(dto.Role))
+            {
+                await _userManager.AddToRoleAsync(newUser, dto.Role);
             }
         }
 
@@ -149,6 +164,17 @@ namespace Infrastructure.Identity
             {
                 var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
                 throw new InvalidOperationException($"Failed to update user: {errors}");
+            }
+
+            // Update user role if changed
+            if (!string.IsNullOrEmpty(dto.Role))
+            {
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                if (!currentRoles.Contains(dto.Role))
+                {
+                    await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                    await _userManager.AddToRoleAsync(user, dto.Role);
+                }
             }
         }
 

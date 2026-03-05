@@ -40,11 +40,13 @@
             Campaigns
         </MudNavLink>
         
-        <MudNavLink Href="/users" 
-                    Match="NavLinkMatch.All" 
-                    Icon="@Icons.Material.Filled.Person"
-                    Class="nav-link">
-            Users
-        </MudNavLink>
+        <AuthorizeView Roles="Admin">
+            <MudNavLink Href="/users" 
+                        Match="NavLinkMatch.All" 
+                        Icon="@Icons.Material.Filled.Person"
+                        Class="nav-link">
+                Users
+            </MudNavLink>
+        </AuthorizeView>
     </MudNavMenu>
 </MudStack>

@@ -3,6 +3,7 @@ using Application.Services.Tickets;
 using Application.Services.Users;
 using Infrastructure.DependencyInjection;
 using Infrastructure.Data;
+using API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<ApiKeyMiddleware>();
 
 app.UseAuthorization();
 

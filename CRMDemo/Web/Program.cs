@@ -1,4 +1,5 @@
 using Web.Components;
+using Web.Helpers;
 using Application.Services.Customers;
 using Application.Services.Tickets;
 using Application.Services.Users;
@@ -29,6 +30,13 @@ builder.Services.AddInfrastructureService(builder.Configuration);
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IIdentityService, IdentityService>();
+
+// API Client - single reusable typed HttpClient for calling the API project
+builder.Services.AddHttpClient<ApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
+    client.DefaultRequestHeaders.Add("X-Api-Key", builder.Configuration["ApiSettings:ApiKey"]!);
+});
 
 
 var app = builder.Build();

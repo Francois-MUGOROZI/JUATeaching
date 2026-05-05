@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Infrastructure.Data;
 using Infrastructure.Repositories;
+using Infrastructure.Services.Reports;
 using Microsoft.EntityFrameworkCore; // ORM
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +32,9 @@ namespace Infrastructure.DependencyInjection
 
             // Register Data Seeder
             services.AddScoped<IDataSeeder, DataSeeder>();
+
+            // Register Report Generator (shared, stateless — singleton is fine)
+            services.AddSingleton<IReportGenerator, ReportGenerator>();
 
             return services;
         }

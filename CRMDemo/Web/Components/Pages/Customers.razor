@@ -5,17 +5,40 @@
 @using Domain.Entities
 @using Application.Services.Customers
 @using Application.DTO
+@using Application.Services.Reports
 @using MudBlazor
 @inject ICustomerService CustomerService
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Navigation
+@inject ICustomerReportService Reporting
+@inject IJSRuntime JS
 
 <PageTitle>Customer List</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6">
-    <MudText Typo="Typo.h4" Class="mb-4">Customer List</MudText>
-    
+    <MudStack Row="true" AlignItems="AlignItems.Center" Class="mb-4">
+        <MudText Typo="Typo.h4" Style="flex:1">Customer List</MudText>
+
+        <MudMenu Label="Export" StartIcon="@Icons.Material.Filled.Download"
+                 Variant="Variant.Outlined" Color="Color.Secondary" EndIcon="@Icons.Material.Filled.ArrowDropDown"
+                 Disabled="@_exporting">
+            <MudMenuItem OnClick="@(async () => await ExportCustomerList(ReportFormat.Pdf))">
+                <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Class="mr-2" />PDF – Customer List
+            </MudMenuItem>
+            <MudMenuItem OnClick="@(async () => await ExportCustomerList(ReportFormat.Excel))">
+                <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-2" />Excel – Customer List
+            </MudMenuItem>
+            <MudDivider />
+            <MudMenuItem OnClick="@(async () => await ExportCustomerSummary(ReportFormat.Pdf))">
+                <MudIcon Icon="@Icons.Material.Filled.PictureAsPdf" Class="mr-2" />PDF – Summary by Status
+            </MudMenuItem>
+            <MudMenuItem OnClick="@(async () => await ExportCustomerSummary(ReportFormat.Excel))">
+                <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-2" />Excel – Summary by Status
+            </MudMenuItem>
+        </MudMenu>
+    </MudStack>
+
     <AuthorizeView Roles="Admin">
         <MudButton Color="Color.Primary" 
                 Variant="Variant.Filled" 
@@ -73,6 +96,28 @@
     {
         LoadCustomers();
     }
+
+    // ── Export ────────────────────────────────────────────────────────────────
+    // The page only decides WHAT to export and in which FORMAT.
+    // Everything else (data fetching, template, logo, generator) lives in the service.
+    private bool _exporting = false;
+
+    private async Task ExportCustomerList(ReportFormat format)
+    {
+        _exporting = true;
+        try   { await Download(Reporting.ExportCustomerList(new CustomerFilterDTO(), format)); }
+        finally { _exporting = false; }
+    }
+
+    private async Task ExportCustomerSummary(ReportFormat format)
+    {
+        _exporting = true;
+        try   { await Download(Reporting.ExportCustomerSummaryByStatus(format)); }
+        finally { _exporting = false; }
+    }
+
+    private async Task Download(ReportFile file)
+        => await JS.InvokeVoidAsync("downloadFile", file.FileName, file.ContentType, Convert.ToBase64String(file.Bytes));
 
     private void LoadCustomers()
     {

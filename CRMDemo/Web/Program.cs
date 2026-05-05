@@ -1,13 +1,10 @@
 using Web.Components;
 using Web.Helpers;
-using Application.Services.Customers;
-using Application.Services.Tickets;
-using Application.Services.Users;
+using Application.DependencyInjection;
 using Infrastructure.DependencyInjection;
 using Infrastructure.Data;
 
 using MudBlazor.Services;
-using Infrastructure.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,9 +24,7 @@ builder.Services.AddControllers();
 builder.Services.AddInfrastructureService(builder.Configuration);
 
 // Dependency Injection for Application Layer
-builder.Services.AddScoped<ICustomerService, CustomerService>();
-builder.Services.AddScoped<ITicketService, TicketService>();
-builder.Services.AddScoped<IIdentityService, IdentityService>();
+builder.Services.AddApplicationServices();
 
 // API Client - single reusable typed HttpClient for calling the API project
 builder.Services.AddHttpClient<ApiClient>(client =>
@@ -65,7 +60,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapControllers(); // Account login/logout endpoints
-app.MapStaticAssets(); // For wwwroot assests
+app.MapStaticAssets(); // For wwwroot assets
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

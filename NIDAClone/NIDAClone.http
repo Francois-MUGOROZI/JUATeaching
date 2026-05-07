@@ -1,0 +1,6 @@
+@NIDAClone_HostAddress = http://localhost:5054
+
+GET {{NIDAClone_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

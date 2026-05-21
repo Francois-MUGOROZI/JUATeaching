@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp1.Pages.TicketDetailPage"
+             Title="Ticket Detail">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30"
+                Spacing="16">
+
+            <!-- Ticket number + title -->
+            <HorizontalStackLayout Spacing="10">
+                <Label x:Name="NumberLabel"
+                       FontSize="15"
+                       TextColor="Gray"
+                       VerticalOptions="End"/>
+                <Label x:Name="TitleLabel"
+                       FontSize="22"
+                       FontAttributes="Bold"/>
+            </HorizontalStackLayout>
+
+            <!-- Status badge -->
+            <Frame x:Name="StatusFrame"
+                   CornerRadius="6"
+                   Padding="10,5"
+                   HorizontalOptions="Start"
+                   HasShadow="False">
+                <Label x:Name="StatusLabel"
+                       FontSize="13"
+                       FontAttributes="Bold"/>
+            </Frame>
+
+            <BoxView HeightRequest="1"
+                    Color="LightGray"
+                    Margin="0,8"/>
+
+            <!-- Detail fields -->
+            <Grid ColumnDefinitions="Auto,*"
+                    RowDefinitions="Auto,Auto"
+                    ColumnSpacing="12"
+                    RowSpacing="14">
+
+                <Label Grid.Row="0"
+                        Grid.Column="0"
+                       Text="Customer"
+                       FontAttributes="Bold"
+                       FontSize="15"/>
+                <Label x:Name="CustomerNameLabel"
+                       Grid.Row="0"
+                        Grid.Column="1"
+                       FontSize="15"/>
+
+                <Label Grid.Row="1"
+                        Grid.Column="0"
+                       Text="Description"
+                       FontAttributes="Bold"
+                       FontSize="15"/>
+                <Label x:Name="DescriptionLabel"
+                       Grid.Row="1"
+                        Grid.Column="1"
+                       FontSize="15"
+                       LineBreakMode="WordWrap"/>
+
+            </Grid>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

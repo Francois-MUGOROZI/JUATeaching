@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MauiApp1.MainPage"
+             Title="Maui App">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30"
+                             Spacing="25">
+
+            <Label
+                Text="Home"
+                FontSize="28"
+                FontAttributes="Bold"
+                HorizontalOptions="Start"/>
+
+            <Label
+                Text="Welcome to MauiApp1. Use the tabs below to navigate, or tap a button to go there programmatically."
+                FontSize="15"
+                TextColor="Gray"/>
+
+            <!-- Programmatic navigation using Shell.GoToAsync() -->
+            <Button
+                Text="Go to Customers"
+                Clicked="OnGoToCustomersClicked"
+                HorizontalOptions="Fill"/>
+
+            <Button
+                Text="Go to Tickets"
+                Clicked="OnGoToTicketsClicked"
+                HorizontalOptions="Fill"/>
+
+            <Label
+                Text="Note: Shell.GoToAsync() navigates by route name, the same strings you set on each ShellContent in AppShell.xaml."
+                FontSize="12"
+                TextColor="Gray"
+                FontAttributes="Italic"/>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

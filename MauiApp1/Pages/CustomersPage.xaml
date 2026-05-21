@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:MauiApp1.Models"
+             x:Class="MauiApp1.Pages.CustomersPage"
+             Title="Customers">
+
+    <Grid>
+
+        <!--
+            RefreshView wraps the CollectionView so the user can pull-to-refresh.
+            Refreshing fires OnRefreshing in the code-behind.
+        -->
+        <RefreshView x:Name="Refresher"
+                     Refreshing="OnRefreshing"
+                     RefreshColor="#512BD4">
+            <CollectionView x:Name="CustomersCollection"
+                            SelectionMode="Single"
+                            SelectionChanged="OnCustomerSelected"
+                            Margin="16,8">
+
+                <!-- Shown when ItemsSource is empty or null -->
+                <CollectionView.EmptyView>
+                    <VerticalStackLayout VerticalOptions="Center"
+                                         HorizontalOptions="Center"
+                                         Spacing="8"
+                                         Margin="0,60">
+                        <Label Text="No customers found"
+                               FontSize="15"
+                               TextColor="Gray"
+                               HorizontalOptions="Center"/>
+                        <Label Text="Pull down to refresh"
+                               FontSize="12"
+                               TextColor="#C0C0C0"
+                               HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </CollectionView.EmptyView>
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Customer">
+                        <!--
+                            Border replaces the deprecated Frame.
+                            StrokeShape="RoundRectangle 12" gives rounded corners.
+                            x:DataType enables compiled (fast) bindings with IntelliSense.
+                        -->
+                        <Border Stroke="#E8E8E8"
+                                StrokeShape="RoundRectangle 12"
+                                StrokeThickness="1"
+                                Padding="16"
+                                Margin="0,0,0,10"
+                                BackgroundColor="White">
+                            <Grid ColumnDefinitions="Auto,*,Auto"
+                                  ColumnSpacing="12">
+
+                                <!-- Initials avatar circle -->
+                                <Border Grid.Column="0"
+                                        BackgroundColor="#512BD4"
+                                        StrokeShape="Ellipse"
+                                        StrokeThickness="0"
+                                        HeightRequest="44"
+                                        WidthRequest="44"
+                                        VerticalOptions="Center">
+                                    <Label Text="{Binding Initials}"
+                                           TextColor="White"
+                                           FontSize="15"
+                                           FontAttributes="Bold"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"/>
+                                </Border>
+
+                                <!-- Full name + email -->
+                                <VerticalStackLayout Grid.Column="1"
+                                                     Spacing="3"
+                                                     VerticalOptions="Center">
+                                    <Label Text="{Binding FullName}"
+                                           FontSize="15"
+                                           FontAttributes="Bold"
+                                           TextColor="#1A1A1A"
+                                           LineBreakMode="TailTruncation"/>
+                                    <Label Text="{Binding Email}"
+                                           FontSize="12"
+                                           TextColor="Gray"
+                                           LineBreakMode="TailTruncation"/>
+                                </VerticalStackLayout>
+
+                                <!-- Status badge + chevron -->
+                                <VerticalStackLayout Grid.Column="2"
+                                                     Spacing="4"
+                                                     VerticalOptions="Center"
+                                                     HorizontalOptions="End">
+                                    <Border StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{Binding StatusColor}"
+                                            Padding="8,3">
+                                        <Label Text="{Binding StatusLabel}"
+                                               FontSize="10"
+                                               FontAttributes="Bold"
+                                               TextColor="White"
+                                               HorizontalOptions="Center"/>
+                                    </Border>
+                                    <Label Text="›"
+                                           FontSize="20"
+                                           TextColor="#C8C8C8"
+                                           HorizontalOptions="Center"/>
+                                </VerticalStackLayout>
+
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <!-- Initial load spinner — sits on top of the list (last child = highest z-order) -->
+        <ActivityIndicator x:Name="LoadingIndicator"
+                           IsRunning="False"
+                           IsVisible="False"
+                           Color="#512BD4"
+                           VerticalOptions="Center"
+                           HorizontalOptions="Center"/>
+
+    </Grid>
+
+</ContentPage>
